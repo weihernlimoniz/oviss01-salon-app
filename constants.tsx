@@ -1,4 +1,3 @@
-
 import { Service, Stylist, Outlet } from './types';
 
 export const MOCK_SERVICES: Service[] = [

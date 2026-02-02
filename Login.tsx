@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User } from '../types';
 import { Mail, Phone, ArrowRight, User as UserIcon, Check } from 'lucide-react';
@@ -22,14 +21,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   const handleRequestTac = (e: React.FormEvent) => {
     e.preventDefault();
-    if (identifier.length > 5) setStep('tac');
+    if (identifier.trim().length > 3) {
+      setStep('tac');
+    }
   };
 
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
-    // For demo purposes, any 6 digits work
+    // For demo purposes, we accept any 6-digit TAC
     if (tac.length === 6) {
-      // Pre-fill fields based on login method
       setRegData(prev => ({
         ...prev,
         email: method === 'email' ? identifier : '',
@@ -43,7 +43,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     e.preventDefault();
     const mockUser: User = {
       id: 'u' + Math.random().toString(36).substr(2, 5),
-      name: regData.name,
+      name: regData.name || 'Valued Customer',
       phone: regData.phone,
       email: regData.email,
       gender: regData.gender,
@@ -57,7 +57,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       <div className="min-h-screen bg-white w-full max-w-md mx-auto flex flex-col px-8 py-10 animate-in fade-in slide-in-from-bottom duration-500 overflow-y-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Create Account</h1>
-          <p className="text-gray-500 text-sm">Fill in your details to get started with Oviss Salon.</p>
+          <p className="text-gray-500 text-sm">We just need a few more details to set up your profile.</p>
         </div>
 
         <form onSubmit={handleRegister} className="space-y-6 w-full pb-10">
@@ -157,7 +157,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <span className="text-white font-serif font-bold text-3xl">O</span>
         </div>
         <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Oviss Salon</h1>
-        <p className="text-gray-500">Log in to book your session.</p>
+        <p className="text-gray-500">Premium Hair Artistry</p>
       </div>
 
       {step === 'input' ? (
@@ -187,7 +187,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               placeholder={method === 'phone' ? '0123456789' : 'name@example.com'}
-              className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-5 pl-12 pr-4 text-gray-900 focus:ring-2 focus:ring-black outline-none transition-all"
+              className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-5 pl-12 pr-4 text-gray-900 focus:ring-2 focus:ring-black outline-none transition-all shadow-sm"
               required
             />
           </div>
@@ -208,7 +208,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             value={tac}
             onChange={(e) => setTac(e.target.value.replace(/\D/g, ''))}
             placeholder="000000"
-            className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-6 text-center text-4xl font-bold tracking-[0.4em] outline-none text-gray-900"
+            className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-6 text-center text-4xl font-bold tracking-[0.4em] outline-none text-gray-900 shadow-inner"
             required
             autoFocus
           />
@@ -220,14 +220,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <button 
               type="button" 
               onClick={() => setStep('input')} 
-              className="w-full text-gray-400 text-sm font-bold py-2"
+              className="w-full text-gray-400 text-sm font-bold py-2 hover:text-black transition-colors"
             >
               Change Details
             </button>
           </div>
           
           <p className="text-xs text-gray-400">
-            Didn't receive the code? <button type="button" className="text-black font-bold underline">Resend</button>
+            Didn't receive the code? <button type="button" className="text-black font-bold underline ml-1">Resend</button>
           </p>
         </form>
       )}
