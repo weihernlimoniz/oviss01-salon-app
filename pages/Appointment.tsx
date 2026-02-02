@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Appointment, Outlet, Stylist, Service } from '../types';
 import { MOCK_OUTLETS, MOCK_STYLISTS, MOCK_SERVICES } from '../constants';
 import { ChevronRight, Calendar as CalendarIcon, MapPin, Scissors, User as UserIcon, X, Check, ChevronDown, AlertTriangle } from 'lucide-react';
@@ -28,8 +28,26 @@ const AppointmentPage: React.FC<AppointmentPageProps> = ({ appointments, onAdd, 
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
+  const monthScrollRef = useRef<HTMLDivElement>(null);
+  const yearScrollRef = useRef<HTMLDivElement>(null);
+
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  const years = Array.from({ length: 5 }, (_, i) => today.getFullYear() + i);
+  const years = Array.from({ length: 10 }, (_, i) => today.getFullYear() - 2 + i);
+
+  // Auto-scroll to current selection when picker opens
+  useEffect(() => {
+    if (isPickerOpen) {
+      setTimeout(() => {
+        if (monthScrollRef.current) {
+          monthScrollRef.current.scrollTop = viewMonth * 48;
+        }
+        if (yearScrollRef.current) {
+          const yearIdx = years.indexOf(viewYear);
+          if (yearIdx !== -1) yearScrollRef.current.scrollTop = yearIdx * 48;
+        }
+      }, 100);
+    }
+  }, [isPickerOpen, viewMonth, viewYear, years]);
 
   const upcomingAppts = appointments.filter(a => a.status === 'upcoming');
 
@@ -148,7 +166,7 @@ const AppointmentPage: React.FC<AppointmentPageProps> = ({ appointments, onAdd, 
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">Select Date</h3>
-                <button onClick={() => setIsPickerOpen(true)} className="flex items-center gap-1 text-sm font-bold text-black bg-gray-50 px-3 py-1.5 rounded-full hover:bg-gray-100">
+                <button onClick={() => setIsPickerOpen(true)} className="flex items-center gap-1 text-sm font-bold text-black bg-gray-50 px-3 py-1.5 rounded-full hover:bg-gray-100 transition-colors">
                   {months[viewMonth]} {viewYear} <ChevronDown size={14} />
                 </button>
               </div>
@@ -167,30 +185,33 @@ const AppointmentPage: React.FC<AppointmentPageProps> = ({ appointments, onAdd, 
               </div>
             </div>
 
-            {/* Scroll-type Date Picker Modal */}
+            {/* Independent Month/Year Picker Modal */}
             {isPickerOpen && (
-              <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-end justify-center">
+              <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center">
                 <div className="bg-white w-full max-w-md rounded-t-3xl p-6 animate-in slide-in-from-bottom duration-300 shadow-2xl">
                   <div className="flex items-center justify-between mb-6">
-                    <h4 className="text-lg font-bold">Select Date</h4>
+                    <h4 className="text-lg font-bold">Select Month & Year</h4>
                     <button onClick={() => setIsPickerOpen(false)} className="p-2 bg-gray-100 rounded-full"><X size={18} /></button>
                   </div>
                   
                   <div className="flex gap-4 h-48 relative border-y border-gray-100 my-4 overflow-hidden">
-                    <div className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide py-20">
+                    {/* Month Column */}
+                    <div ref={monthScrollRef} className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide py-20">
                       {months.map((m, idx) => (
-                        <div key={m} onClick={() => setViewMonth(idx)} className={`h-12 flex items-center justify-center snap-center cursor-pointer ${viewMonth === idx ? 'text-black font-bold text-lg' : 'text-gray-300 text-sm'}`}>{m}</div>
+                        <div key={m} onClick={() => setViewMonth(idx)} className={`h-12 flex items-center justify-center snap-center cursor-pointer transition-all ${viewMonth === idx ? 'text-black font-bold text-lg' : 'text-gray-300 text-sm'}`}>{m}</div>
                       ))}
                     </div>
-                    <div className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide py-20">
+                    {/* Year Column */}
+                    <div ref={yearScrollRef} className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide py-20">
                       {years.map(y => (
-                        <div key={y} onClick={() => setViewYear(y)} className={`h-12 flex items-center justify-center snap-center cursor-pointer ${viewYear === y ? 'text-black font-bold text-lg' : 'text-gray-300 text-sm'}`}>{y}</div>
+                        <div key={y} onClick={() => setViewYear(y)} className={`h-12 flex items-center justify-center snap-center cursor-pointer transition-all ${viewYear === y ? 'text-black font-bold text-lg' : 'text-gray-300 text-sm'}`}>{y}</div>
                       ))}
                     </div>
-                    <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-12 border-y-2 border-black/10 pointer-events-none"></div>
+                    {/* Selector Focus Bar */}
+                    <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-12 bg-gray-50/50 border-y-2 border-black/5 pointer-events-none"></div>
                   </div>
 
-                  <button onClick={() => setIsPickerOpen(false)} className="w-full bg-black text-white py-4 rounded-xl font-bold mt-4">Done</button>
+                  <button onClick={() => setIsPickerOpen(false)} className="w-full bg-black text-white py-4 rounded-xl font-bold mt-4 shadow-xl active:scale-95 transition-all">Apply Selection</button>
                 </div>
               </div>
             )}
@@ -227,7 +248,7 @@ const AppointmentPage: React.FC<AppointmentPageProps> = ({ appointments, onAdd, 
             )}
 
             {selectedServiceIds.length > 0 && (
-              <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-6 z-[60] shadow-2xl">
+              <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-6 z-[60] shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
                 <div className="max-w-md mx-auto">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-gray-500 text-sm font-medium">{selectedServiceIds.length} items</span>
@@ -261,7 +282,7 @@ const AppointmentPage: React.FC<AppointmentPageProps> = ({ appointments, onAdd, 
               const services = MOCK_SERVICES.filter(s => appt.serviceIds.includes(s.id));
               const stylist = MOCK_STYLISTS.find(s => s.id === appt.stylistId);
               return (
-                <div key={appt.id} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm relative w-full">
+                <div key={appt.id} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm relative w-full overflow-hidden">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-black"><CalendarIcon size={24} /></div>
                     <div className="flex-1 min-w-0 pr-2">
@@ -274,8 +295,8 @@ const AppointmentPage: React.FC<AppointmentPageProps> = ({ appointments, onAdd, 
                     <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Date</span><span className="font-bold text-sm text-gray-900">{appt.date}</span></div>
                     <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Time</span><span className="font-bold text-sm text-gray-900">{appt.time}</span></div>
                     <div className="ml-auto flex flex-col gap-2">
-                      <button onClick={() => handleReschedule(appt)} className="text-black text-[10px] font-bold px-4 py-1.5 bg-gray-50 rounded-full border border-gray-200">Reschedule</button>
-                      <button onClick={() => setCancelTarget(appt.id)} className="text-red-500 text-[10px] font-bold px-4 py-1.5 bg-red-50 rounded-full border border-red-100">Cancel</button>
+                      <button onClick={() => handleReschedule(appt)} className="text-black text-[10px] font-bold px-4 py-1.5 bg-gray-50 rounded-full border border-gray-200 hover:bg-black hover:text-white transition-all">Reschedule</button>
+                      <button onClick={() => setCancelTarget(appt.id)} className="text-red-500 text-[10px] font-bold px-4 py-1.5 bg-red-50 rounded-full border border-red-100 hover:bg-red-500 hover:text-white transition-all">Cancel</button>
                     </div>
                   </div>
                 </div>

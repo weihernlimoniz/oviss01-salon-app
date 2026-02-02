@@ -16,11 +16,13 @@ const Profile: React.FC<ProfileProps> = ({ user, appointments, onUpdate, onLogou
   const [showHistory, setShowHistory] = useState(false);
   const [editForm, setEditForm] = useState(user);
 
+  const handleSave = () => { onUpdate(editForm); setIsEditing(false); };
+
   if (showHistory) {
     return (
-      <div className="p-6 animate-in slide-in-from-right duration-300 w-full min-h-full">
+      <div className="p-6 animate-in slide-in-from-right duration-300 w-full flex-1">
         <button onClick={() => setShowHistory(false)} className="flex items-center gap-2 text-gray-500 mb-6 font-semibold"><ChevronLeft size={20} /> Back</button>
-        <div className="mb-8"><h2 className="text-2xl font-serif font-bold text-gray-900 mb-1">History</h2></div>
+        <div className="mb-8"><h2 className="text-2xl font-serif font-bold text-gray-900 mb-1">Booking History</h2></div>
         {appointments.length === 0 ? (
           <div className="bg-gray-50 rounded-2xl p-8 text-center border border-dashed border-gray-200 w-full"><p className="text-gray-400 text-sm">No history yet</p></div>
         ) : (
@@ -54,40 +56,87 @@ const Profile: React.FC<ProfileProps> = ({ user, appointments, onUpdate, onLogou
   }
 
   return (
-    <div className="p-6 w-full flex flex-col min-h-screen pb-32">
+    <div className="p-6 w-full flex flex-col flex-1 min-h-[calc(100vh-160px)]">
+      {/* Profile Info */}
       <div className="flex flex-col items-center mb-8 w-full">
         <div className="relative mb-4">
           <div className="w-28 h-28 rounded-3xl overflow-hidden ring-4 ring-gray-50 shadow-xl">
             <img src={user.profilePic || `https://picsum.photos/seed/${user.id}/200/200`} className="w-full h-full object-cover" />
           </div>
-          <button className="absolute -bottom-2 -right-2 bg-black text-white p-2 rounded-xl shadow-lg hover:scale-105 transition-transform"><Camera size={18} /></button>
+          <button className="absolute -bottom-2 -right-2 bg-black text-white p-2 rounded-xl shadow-lg hover:scale-110 transition-transform"><Camera size={18} /></button>
         </div>
         <h2 className="text-2xl font-serif font-bold text-gray-900 text-center">{user.name}</h2>
       </div>
 
+      {/* Credit Balance Card */}
       <div className="bg-black rounded-3xl p-6 text-white mb-8 shadow-2xl relative overflow-hidden w-full">
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-2"><Wallet size={16} className="text-white/60" /><span className="text-xs uppercase tracking-widest text-white/60">Balance</span></div>
           <div className="text-4xl font-serif font-bold mb-4"><span className="text-2xl mr-1 text-white/40 font-sans">RM</span>{user.creditBalance.toFixed(2)}</div>
-          <button className="w-full bg-white/10 text-white py-2 rounded-xl text-sm font-bold border border-white/10">Add Credit</button>
+          <button className="w-full bg-white/10 text-white py-2.5 rounded-xl text-sm font-bold border border-white/10 hover:bg-white/20 transition-all">Top Up Credit</button>
         </div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
       </div>
 
+      {/* Detail Sections */}
       <div className="space-y-4 mb-8 w-full">
-        <div className="flex items-center justify-between px-1"><h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Account</h3>{!isEditing && <button onClick={() => setIsEditing(true)} className="text-black text-[10px] font-bold flex items-center gap-1"><Edit2 size={10} /> Edit</button>}</div>
-        <div className="bg-gray-50 rounded-2xl p-5 space-y-6 w-full">
-          <div className="flex items-center gap-4"><div className="text-gray-400"><UserIcon size={20} /></div><div className="flex-grow min-w-0"><div className="text-[10px] uppercase text-gray-400">Name</div><span className="font-semibold text-gray-900 text-sm">{user.name}</span></div></div>
-          <div className="flex items-center gap-4"><div className="text-gray-400"><Phone size={20} /></div><div className="flex-grow min-w-0"><div className="text-[10px] uppercase text-gray-400">Phone</div><span className="font-semibold text-gray-900 text-sm">{user.phone}</span></div></div>
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Account Details</h3>
+          {!isEditing && <button onClick={() => setIsEditing(true)} className="text-black text-[10px] font-bold flex items-center gap-1"><Edit2 size={10} /> Edit</button>}
         </div>
+        <div className="bg-gray-50 rounded-2xl p-5 space-y-6 w-full">
+          <div className="flex items-center gap-4">
+            <div className="text-gray-400"><UserIcon size={20} /></div>
+            <div className="flex-grow min-w-0">
+              {isEditing ? (
+                <input value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="bg-transparent border-b border-gray-300 w-full outline-none font-semibold text-sm py-1 focus:border-black transition-colors" />
+              ) : (
+                <>
+                  <div className="text-[10px] uppercase text-gray-400">Name</div>
+                  <span className="font-semibold text-gray-900 text-sm">{user.name}</span>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-gray-400"><Phone size={20} /></div>
+            <div className="flex-grow min-w-0">
+              {isEditing ? (
+                <input value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} className="bg-transparent border-b border-gray-300 w-full outline-none font-semibold text-sm py-1 focus:border-black transition-colors" />
+              ) : (
+                <>
+                  <div className="text-[10px] uppercase text-gray-400">Phone</div>
+                  <span className="font-semibold text-gray-900 text-sm">{user.phone}</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+        {isEditing && (
+          <button onClick={handleSave} className="w-full bg-black text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-900 transition-colors shadow-lg shadow-black/10"><Check size={18} /> Update Info</button>
+        )}
       </div>
 
+      {/* Nav Actions */}
       <div className="space-y-2 w-full mb-12">
-        <button onClick={() => setShowHistory(true)} className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-2xl group"><div className="flex items-center gap-3"><History size={20} className="text-gray-400" /><span className="font-semibold text-sm">Booking History</span></div><ArrowRight size={18} className="text-gray-300" /></button>
-        <button className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-2xl"><div className="flex items-center gap-3"><Shield size={20} className="text-gray-400" /><span className="font-semibold text-sm">Privacy Policy</span></div><ChevronRight size={20} className="text-gray-300" /></button>
+        <button onClick={() => setShowHistory(true)} className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-2xl group active:bg-gray-100 transition-all">
+          <div className="flex items-center gap-3"><History size={20} className="text-gray-400" /><span className="font-semibold text-sm">Booking History</span></div>
+          <ArrowRight size={18} className="text-gray-300 group-hover:text-black group-hover:translate-x-1 transition-all" />
+        </button>
+        <button className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-2xl group active:bg-gray-100 transition-all">
+          <div className="flex items-center gap-3"><Shield size={20} className="text-gray-400" /><span className="font-semibold text-sm">Privacy Policy</span></div>
+          <ChevronRight size={20} className="text-gray-300 group-hover:text-black transition-all" />
+        </button>
       </div>
 
-      <div className="mt-auto pt-4">
-        <button onClick={onLogout} className="flex items-center gap-2 text-red-500 font-bold text-[10px] bg-red-50 px-4 py-2 rounded-lg hover:bg-red-100 transition-colors w-fit uppercase tracking-widest"><LogOut size={14} /> Sign Out</button>
+      {/* Smaller Logout button at bottom left */}
+      <div className="mt-auto pt-8">
+        <button 
+          onClick={onLogout} 
+          className="flex items-center gap-2 text-red-500 font-bold text-[10px] bg-red-50 px-4 py-2 rounded-lg hover:bg-red-100 transition-colors w-fit uppercase tracking-widest active:scale-95"
+        >
+          <LogOut size={14} /> Sign Out
+        </button>
       </div>
     </div>
   );
